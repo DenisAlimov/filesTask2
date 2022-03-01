@@ -1,7 +1,6 @@
 import java.io.*;
 import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.*;
 
 public class Main {
 
@@ -22,6 +21,13 @@ public class Main {
         saves.add(PATH + "//save3.dat");
 
         zipFiles((PATH + "//zip.zip"), saves);
+
+        //3 задача:
+        openZip(PATH + "//zip.zip", PATH);
+
+        System.out.println(openProgress(PATH + "//save1.dat"));
+        System.out.println(openProgress(PATH + "//save2.dat"));
+        System.out.println(openProgress(PATH + "//save3.dat"));
     }
 
     private static void saveGame(String path, GameProgress gameProgress) {
@@ -56,5 +62,36 @@ public class Main {
                 System.out.println("Файл удален");
             else System.out.println("Файл не удален");
         }
+    }
+
+    //3 задача:
+    private static void openZip(String path, String pathToDir) {
+        try (ZipInputStream zin = new ZipInputStream(new FileInputStream(path))) {
+            ZipEntry entry;
+            String name;
+            while ((entry = zin.getNextEntry()) != null) {
+                name = entry.getName();
+                FileOutputStream fout = new FileOutputStream(pathToDir + "//" + name);
+                for (int c = zin.read(); c != -1; c = zin.read()) {
+                    fout.write(c);
+                }
+                fout.flush();
+                zin.closeEntry();
+                fout.close();
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    private static GameProgress openProgress(String path) {
+        GameProgress gameProgress = null;
+        try (FileInputStream fis = new FileInputStream(path);
+             ObjectInputStream ois = new ObjectInputStream(fis)) {
+            gameProgress = (GameProgress) ois.readObject();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        return gameProgress;
     }
 }
